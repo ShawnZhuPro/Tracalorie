@@ -10,6 +10,7 @@ class CalorieTracker {
     this._displayCaloriesConsumed();
     this._displayCaloriesBurned();
     this._displayCaloriesRemaining();
+    this._displayCaloriesProgress();
   }
 
   // Public Methods/API //
@@ -64,9 +65,41 @@ class CalorieTracker {
 
   _displayCaloriesRemaining() {
     const caloriesRemainingEl = document.getElementById("calories-remaining");
+    const progressEl = document.getElementById("calorie-progress");
 
     const remaining = this._calorieLimit - this._totalCalories;
     caloriesRemainingEl.innerHTML = remaining;
+
+    if (remaining < 0) {
+      // Goes to the div with the class of card to toggle "bg-light" to "bg-danger"
+      caloriesRemainingEl.parentElement.parentElement.classList.remove(
+        "bg-light"
+      );
+      caloriesRemainingEl.parentElement.parentElement.classList.add(
+        "bg-danger"
+      );
+      // Changes from green to red progress bar
+      progressEl.classList.remove("bg-success");
+      progressEl.classList.add("bg-danger");
+    } else {
+      // Toggles "bg-danger" to "bg-light"
+      caloriesRemainingEl.parentElement.parentElement.classList.remove(
+        "bg-danger"
+      );
+      caloriesRemainingEl.parentElement.parentElement.classList.add("bg-light");
+    }
+    // Changes from red to green progress bar
+    progressEl.classList.remove("bg-danger");
+    progressEl.classList.add("bg-success");
+  }
+
+  _displayCaloriesProgress() {
+    const progressEl = document.getElementById("calorie-progress");
+    const percentage = (this._totalCalories / this._calorieLimit) * 100;
+
+    // Visually updates the progress bar with "width" using bootstrap 5 in CSS
+    const width = Math.min(percentage, 100);
+    progressEl.style.width = `${width}%`;
   }
 
   _render() {
@@ -74,11 +107,13 @@ class CalorieTracker {
     this._displayCaloriesConsumed();
     this._displayCaloriesBurned();
     this._displayCaloriesRemaining();
+    this._displayCaloriesProgress();
   }
 }
 
 class Meal {
   constructor(name, calories) {
+    // ID contains all characters after the first 2 in hexadecimal
     this.id = Math.random().toString(16).slice(2);
     this.name = name;
     this.calories = calories;
@@ -87,18 +122,41 @@ class Meal {
 
 class Workout {
   constructor(name, calories) {
+    // ID contains all characters after the first 2 in hexadecimal
     this.id = Math.random().toString(16).slice(2);
     this.name = name;
     this.calories = calories;
   }
 }
 
-const tracker = new CalorieTracker();
+class App {
+  constructor() {
+    this._tracker = new CalorieTracker();
 
-const breakfast = new Meal("Breakfast", 400);
-const lunch = new Meal("Lunch", 350);
-tracker.addMeal(breakfast);
-tracker.addMeal(lunch);
+    document
+      .getElementById("meal-form")
+      // bind() is used to make "this" pertain to the tracker object, not the window object
+      .addEventListener("submit", this._newMeal.bind(this));
+  }
 
-const run = new Workout("Morning Run", 300);
-tracker.addWorkout(run);
+  _newMeal(e) {
+    // Prevents page reload
+    e.preventDefault();
+
+    const name = document.getElementById("meal-name");
+    const calories = document.getElementById("meal-calories");
+
+    // Validate inputs
+    if (name.value === "" || calories.value === "") {
+      alert("Please fill in all fields");
+    }
+
+    const meal = new Meal(name.value, calories.value);
+
+    this._tracker.addMeal(meal);
+
+    // Clears the form
+    name.value = "";
+    calories.value = "";
+  }
+}
