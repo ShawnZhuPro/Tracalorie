@@ -137,6 +137,11 @@ class App {
       .getElementById("meal-form")
       // bind() is used to make "this" pertain to the tracker object, not the window object
       .addEventListener("submit", this._newMeal.bind(this));
+
+    document
+      .getElementById("workout-form")
+      // bind() is used to make "this" pertain to the tracker object, not the window object
+      .addEventListener("submit", this._newWorkout.bind(this));
   }
 
   _newMeal(e) {
@@ -149,14 +154,54 @@ class App {
     // Validate inputs
     if (name.value === "" || calories.value === "") {
       alert("Please fill in all fields");
+      return;
     }
 
-    const meal = new Meal(name.value, calories.value);
+    // We use "+" for converting a String to a number
+    const meal = new Meal(name.value, +calories.value);
 
     this._tracker.addMeal(meal);
 
     // Clears the form
     name.value = "";
     calories.value = "";
+
+    // Collapse the form
+    const collapseMeal = document.getElementById("collapse-meal");
+    const bsCollapse = new bootstrap.Collapse(collapseMeal, {
+      toggle: true,
+    });
+  }
+
+  _newWorkout(e) {
+    // Prevents page reload
+    e.preventDefault();
+
+    const name = document.getElementById("workout-name");
+    const calories = document.getElementById("workout-calories");
+
+    // Validate inputs
+    if (name.value === "" || calories.value === "") {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    // We use "+" for converting a String to a number
+    const workout = new Workout(name.value, +calories.value);
+
+    this._tracker.addWorkout(workout);
+
+    // Clears the form
+    name.value = "";
+    calories.value = "";
+
+    // Collapse the form
+    const collapseWorkout = document.getElementById("collapse-workout");
+    const bsCollapse = new bootstrap.Collapse(collapseWorkout, {
+      toggle: true,
+    });
   }
 }
+
+// Starts the entire application
+const app = new App();
