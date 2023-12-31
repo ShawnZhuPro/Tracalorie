@@ -18,12 +18,14 @@ class CalorieTracker {
   addMeal(meal) {
     this._meals.push(meal);
     this._totalCalories += meal.calories;
+    this._displayNewMeal(meal);
     this._render();
   }
 
   addWorkout(workout) {
     this._workouts.push(workout);
     this._totalCalories -= workout.calories;
+    this._displayNewWorkout(workout);
     this._render();
   }
 
@@ -102,6 +104,50 @@ class CalorieTracker {
     progressEl.style.width = `${width}%`;
   }
 
+  _displayNewMeal(meal) {
+    const mealsEl = document.getElementById("meal-items");
+    const mealEl = document.createElement("div");
+    mealEl.classList.add("card", "my-2");
+    // Custom attribute with meal id - We need this later on to delete a meal
+    mealEl.setAttribute("data-id", meal.id);
+    mealEl.innerHTML = `
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <h4 class="mx-1">${meal.name}</h4>
+          <div class="fs-1 bg-primary text-white text-center rounded-2 px-2 px-sm-5">
+            ${meal.calories}
+          </div>
+          <button class="delete btn btn-danger btn-sm mx-2">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+    `;
+    // Add mealEl to mealsEl
+    mealsEl.appendChild(mealEl);
+  }
+
+  _displayNewWorkout(workout) {
+    const workoutsEl = document.getElementById("workout-items");
+    const workoutEl = document.createElement("div");
+    workoutEl.classList.add("card", "my-2");
+    workoutEl.setAttribute("data-id", workout.id);
+    workoutEl.innerHTML = `
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <h4 class="mx-1">${workout.name}</h4>
+          <div class="fs-1 bg-secondary text-white text-center rounded-2 px-2 px-sm-5">
+            ${workout.calories}
+          </div>
+          <button class="delete btn btn-danger btn-sm mx-2">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+    `;
+    workoutsEl.appendChild(workoutEl);
+  }
+
   _render() {
     this._displayCaloriesTotal();
     this._displayCaloriesConsumed();
@@ -136,20 +182,21 @@ class App {
     document
       .getElementById("meal-form")
       // bind() is used to make "this" pertain to the tracker object, not the window object
-      .addEventListener("submit", this._newMeal.bind(this));
+      .addEventListener("submit", this._newItem.bind(this, "meal"));
 
     document
       .getElementById("workout-form")
       // bind() is used to make "this" pertain to the tracker object, not the window object
-      .addEventListener("submit", this._newWorkout.bind(this));
+      .addEventListener("submit", this._newItem.bind(this, "workout"));
   }
 
-  _newMeal(e) {
+  // Arguments come first, then the event object "e"
+  _newItem(type, e) {
     // Prevents page reload
     e.preventDefault();
 
-    const name = document.getElementById("meal-name");
-    const calories = document.getElementById("meal-calories");
+    const name = document.getElementById(`${type}-name`);
+    const calories = document.getElementById(`${type}-calories`);
 
     // Validate inputs
     if (name.value === "" || calories.value === "") {
@@ -157,47 +204,23 @@ class App {
       return;
     }
 
-    // We use "+" for converting a String to a number
-    const meal = new Meal(name.value, +calories.value);
-
-    this._tracker.addMeal(meal);
-
-    // Clears the form
-    name.value = "";
-    calories.value = "";
-
-    // Collapse the form
-    const collapseMeal = document.getElementById("collapse-meal");
-    const bsCollapse = new bootstrap.Collapse(collapseMeal, {
-      toggle: true,
-    });
-  }
-
-  _newWorkout(e) {
-    // Prevents page reload
-    e.preventDefault();
-
-    const name = document.getElementById("workout-name");
-    const calories = document.getElementById("workout-calories");
-
-    // Validate inputs
-    if (name.value === "" || calories.value === "") {
-      alert("Please fill in all fields");
-      return;
+    if (type === "meal") {
+      // We use "+" for converting a String to a number
+      const meal = new Meal(name.value, +calories.value);
+      this._tracker.addMeal(meal);
+    }
+    if (type === "workout") {
+      const workout = new Workout(name.value, +calories.value);
+      this._tracker.addWorkout(workout);
     }
 
-    // We use "+" for converting a String to a number
-    const workout = new Workout(name.value, +calories.value);
-
-    this._tracker.addWorkout(workout);
-
     // Clears the form
     name.value = "";
     calories.value = "";
 
     // Collapse the form
-    const collapseWorkout = document.getElementById("collapse-workout");
-    const bsCollapse = new bootstrap.Collapse(collapseWorkout, {
+    const collapseItem = document.getElementById(`collapse-${type}`);
+    const bsCollapse = new bootstrap.Collapse(collapseItem, {
       toggle: true,
     });
   }
