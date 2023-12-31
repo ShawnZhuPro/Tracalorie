@@ -29,6 +29,32 @@ class CalorieTracker {
     this._render();
   }
 
+  removeMeal(id) {
+    // Returns the index if found, -1 if not found
+    const index = this._meals.findIndex((meal) => meal.id === id);
+
+    if (index !== -1) {
+      const meal = this._meals[index];
+      this._totalCalories -= meal.calories;
+      // Takes away the meal from the array
+      this._meals.splice(index, 1);
+      this._render();
+    }
+  }
+
+  removeWorkout(id) {
+    // Returns the index if found, -1 if not found
+    const index = this._workouts.findIndex((workout) => workout.id === id);
+
+    if (index !== -1) {
+      const workout = this._workouts[index];
+      this._totalCalories += workout.calories;
+      // Takes away the workout from the array
+      this._workouts.splice(index, 1);
+      this._render();
+    }
+  }
+
   // Private Methods //
 
   _displayCaloriesTotal() {
@@ -188,6 +214,14 @@ class App {
       .getElementById("workout-form")
       // bind() is used to make "this" pertain to the tracker object, not the window object
       .addEventListener("submit", this._newItem.bind(this, "workout"));
+
+    document
+      .getElementById("meal-items")
+      .addEventListener("click", this._removeItem.bind(this, "meal"));
+
+    document
+      .getElementById("workout-items")
+      .addEventListener("click", this._removeItem.bind(this, "workout"));
   }
 
   // Arguments come first, then the event object "e"
@@ -223,6 +257,26 @@ class App {
     const bsCollapse = new bootstrap.Collapse(collapseItem, {
       toggle: true,
     });
+  }
+
+  _removeItem(type, e) {
+    // If delete button is clicked
+    if (
+      e.target.classList.contains("delete") ||
+      e.target.classList.contains("fa-xmark")
+    ) {
+      if (confirm("Are you sure?")) {
+        // We want to get the closest div with the class of card then get the data attribute
+        const id = e.target.closest(".card").getAttribute("data-id");
+
+        type === "meal"
+          ? this._tracker.removeMeal(id)
+          : this._tracker.removeWorkout(id);
+
+        // Removes from the DOM
+        e.target.closest(".card").remove();
+      }
+    }
   }
 }
 
