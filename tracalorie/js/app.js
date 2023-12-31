@@ -15,7 +15,7 @@ class CalorieTracker {
     document.getElementById("limit").value = this._caloriesLimit;
   }
 
-  // Public Methods/API //
+  // Public Methods/APIs //
 
   addMeal(meal) {
     this._meals.push(meal);
